@@ -1,6 +1,7 @@
 package com.github.littleemptydoll.lasthope.registry;
 
 import com.github.littleemptydoll.lasthope.LastHope;
+import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
@@ -41,6 +42,6 @@ public class ModBlocks {
             registerBlock(
                     "cardboard_box",
                     () -> new CardboardBoxBlock(
-                            BlockBehaviour.Properties.of()
+                            ModBlockProperties.cardboard()
                     ));
 }
