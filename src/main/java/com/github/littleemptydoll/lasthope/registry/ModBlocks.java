@@ -1,5 +1,6 @@
 package com.github.littleemptydoll.lasthope.registry;
 
+import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
 import com.github.littleemptydoll.lasthope.client.model.ModelType;
@@ -27,13 +28,15 @@ public class ModBlocks {
             "test_block",
             TestBlock::new,
             ModelType.SIMPLE,
-            AssetFolder.DECORATION
+            AssetFolder.DECORATION,
+            ModBlockProperties::decoration
     );
 
     public static final BlockDefinition CARDBOARD_BOX = BlockRegistry.register(
             "cardboard_box",
             CardboardBoxBlock::new,
             ModelType.SIMPLE,
-            AssetFolder.DECORATION
+            AssetFolder.DECORATION,
+            ModBlockProperties::softDecoration
     );
 }

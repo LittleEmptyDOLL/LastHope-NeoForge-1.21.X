@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class BlockRegistry {
     private BlockRegistry() {}
@@ -27,9 +28,10 @@ public class BlockRegistry {
     // Вспомогательный метод для регистрации блока
     private static <T extends Block> DeferredBlock<T> registerBlock(
             String name,
-            Function<BlockBehaviour.Properties, T> factory )
+            Function<BlockBehaviour.Properties, T> factory,
+            Supplier<BlockBehaviour.Properties> properties)
     {
-        DeferredBlock<T> block = BLOCKS.register(name, () -> factory.apply(ModBlockProperties.defaultProperties()));
+        DeferredBlock<T> block = BLOCKS.register(name, () -> factory.apply(properties.get()));
         ModItems.registerBlockItem(name, block);
 
         return block;
@@ -40,13 +42,19 @@ public class BlockRegistry {
             String name,
             Function<BlockBehaviour.Properties, ? extends Block> factory,
             ModelType modelType,
-            AssetFolder assetFolder
+            AssetFolder assetFolder,
+            Supplier<BlockBehaviour.Properties> properties
     ) {
-        DeferredBlock<? extends  Block> block = registerBlock(name, factory);
+        DeferredBlock<? extends  Block> block = registerBlock(
+                name,
+                factory,
+                properties
+        );
         BlockDefinition definition = new BlockDefinition(
                 block,
                 modelType,
-                assetFolder
+                assetFolder,
+                properties
         );
         BLOCK_DEFINITIONS.add(definition);
 
