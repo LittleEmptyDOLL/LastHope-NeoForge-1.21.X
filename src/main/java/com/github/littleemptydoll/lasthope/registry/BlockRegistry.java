@@ -50,7 +50,7 @@ public class BlockRegistry {
                 factory,
                 properties
         );
-        BlockDefinition definition = new BlockDefinition(
+        BlockDefinition definition = BlockDefinition.of(
                 block,
                 modelType,
                 assetFolder,

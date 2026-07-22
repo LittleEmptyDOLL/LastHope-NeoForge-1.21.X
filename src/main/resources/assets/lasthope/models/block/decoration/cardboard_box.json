@@ -1,8 +1,8 @@
 {
-	"parent": "block/block",
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
+	"parent": "block",
 	"textures": {
 		"0": "lasthope:block/decoration/cardboard_box",
 		"particle": "lasthope:block/decoration/cardboard_box"

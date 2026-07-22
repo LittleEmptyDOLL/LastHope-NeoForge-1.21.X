@@ -4,8 +4,9 @@ import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
 import com.github.littleemptydoll.lasthope.client.model.ModelType;
-import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
-import com.github.littleemptydoll.lasthope.registry.definition.AssetFolder;
+import com.github.littleemptydoll.lasthope.registry.definition.*;
+import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
+import com.github.littleemptydoll.lasthope.registry.definition.settings.ContainerSettings;
 import net.neoforged.bus.api.IEventBus;
 
 import java.util.List;
@@ -30,6 +31,10 @@ public class ModBlocks {
             ModelType.SIMPLE,
             AssetFolder.DECORATION,
             ModBlockProperties::decoration
+    ).withContainer(
+            ContainerSettings.of(InventoryLayouts.BOX)
+                    .preserveInventory(true)
+                    .sound(ContainerSound.METAL)
     );
 
     public static final BlockDefinition CARDBOARD_BOX = BlockRegistry.register(

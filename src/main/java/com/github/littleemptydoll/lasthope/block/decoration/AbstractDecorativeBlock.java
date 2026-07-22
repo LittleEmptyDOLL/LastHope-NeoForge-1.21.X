@@ -12,7 +12,7 @@ public abstract class AbstractDecorativeBlock extends Block {
         super(properties);
     }
 
-    //
+    // Коллайдер блока
     protected abstract VoxelShape getBlockShape();
 
     @Override
