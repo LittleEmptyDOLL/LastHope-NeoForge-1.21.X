@@ -35,6 +35,7 @@ public class BlockDefinition {
         );
     }
 
+    // Block
     private final DeferredBlock<? extends Block> block;
     // Поведение
     private final ModelType modelType;

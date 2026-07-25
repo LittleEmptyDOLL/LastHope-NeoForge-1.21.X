@@ -1,10 +1,10 @@
 package com.github.littleemptydoll.lasthope.registry;
 
 import com.github.littleemptydoll.lasthope.LastHope;
-import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.client.model.ModelType;
 import com.github.littleemptydoll.lasthope.registry.definition.AssetFolder;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
+import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -55,6 +55,10 @@ public class BlockRegistry {
                 modelType,
                 assetFolder,
                 properties
+        );
+        BlockDefinitionRegistry.register(
+                block,
+                definition
         );
         BLOCK_DEFINITIONS.add(definition);
 
