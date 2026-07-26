@@ -56,10 +56,7 @@ public class BlockRegistry {
                 assetFolder,
                 properties
         );
-        BlockDefinitionRegistry.register(
-                block,
-                definition
-        );
+        BlockDefinitionRegistry.register(definition);
         BLOCK_DEFINITIONS.add(definition);
 
         return definition;
