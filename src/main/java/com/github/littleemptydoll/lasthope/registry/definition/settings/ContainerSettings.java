@@ -11,13 +11,19 @@ public class ContainerSettings {
     private @Nullable ResourceLocation guiTexture;
     private ContainerSound sound;
 
-    public ContainerSettings( InventoryLayout layout ) {
+    public ContainerSettings(
+            InventoryLayout layout,
+            ContainerSound sound
+    ) {
         this.layout = layout;
-        this.sound = ContainerSound.BOX;
+        this.sound = sound;
     }
 
-    public static ContainerSettings of(InventoryLayout layout) {
-        return new ContainerSettings(layout);
+    public static ContainerSettings of(
+            InventoryLayout layout,
+            ContainerSound sound
+    ) {
+        return new ContainerSettings(layout, sound);
     }
 
     public ContainerSettings preserveInventory(boolean preserve) {

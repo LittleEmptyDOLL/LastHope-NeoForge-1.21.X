@@ -4,9 +4,11 @@ import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
 import com.github.littleemptydoll.lasthope.client.model.ModelType;
+import com.github.littleemptydoll.lasthope.registry.category.BlockCategory;
 import com.github.littleemptydoll.lasthope.registry.definition.*;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.ContainerSettings;
+import com.github.littleemptydoll.lasthope.registry.tag.BlockTag;
 import net.neoforged.bus.api.IEventBus;
 
 import java.util.List;
@@ -28,20 +30,38 @@ public class ModBlocks {
     public static final BlockDefinition TEST_BLOCK = BlockRegistry.register(
             "test_block",
             TestBlock::new,
-            ModelType.SIMPLE,
-            AssetFolder.DECORATION,
-            ModBlockProperties::decoration
-    ).withContainer(
-            ContainerSettings.of(InventoryLayouts.BOX)
-                    .preserveInventory(true)
-                    .sound(ContainerSound.METAL)
+            BlockDefinition.builder()
+                    .category(BlockCategory.STORAGE)
+                    .assetFolder(AssetFolder.DECORATION)
+                    .properties(ModBlockProperties::decoration)
+                    .container(
+                            ContainerSettings.of(
+                                    InventoryLayouts.BOX,
+                                    ContainerSound.METAL
+                            )
+                                    .preserveInventory(true)
+                    )
+                    .build()
     );
 
     public static final BlockDefinition CARDBOARD_BOX = BlockRegistry.register(
             "cardboard_box",
             CardboardBoxBlock::new,
-            ModelType.SIMPLE,
-            AssetFolder.DECORATION,
-            ModBlockProperties::softDecoration
+            BlockDefinition.builder()
+                    .category(BlockCategory.STORAGE)
+                    .assetFolder(AssetFolder.DECORATION)
+                    .properties(ModBlockProperties::softDecoration)
+                    .container(
+                            ContainerSettings.of(
+                                    InventoryLayouts.SMALL_BOX,
+                                    ContainerSound.BOX
+                            )
+                    )
+                    .tags(
+                            BlockTag.FLAMMABLE,
+                            BlockTag.BREAKABLE,
+                            BlockTag.LOOTABLE
+                    )
+                    .build()
     );
 }

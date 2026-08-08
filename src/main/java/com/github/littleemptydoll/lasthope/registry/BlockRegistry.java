@@ -41,21 +41,15 @@ public class BlockRegistry {
     public static BlockDefinition register(
             String name,
             Function<BlockBehaviour.Properties, ? extends Block> factory,
-            ModelType modelType,
-            AssetFolder assetFolder,
-            Supplier<BlockBehaviour.Properties> properties
+            BlockDefinition definition
     ) {
-        DeferredBlock<? extends  Block> block = registerBlock(
-                name,
-                factory,
-                properties
-        );
-        BlockDefinition definition = BlockDefinition.of(
-                block,
-                modelType,
-                assetFolder,
-                properties
-        );
+        DeferredBlock<? extends  Block> block =
+                registerBlock(
+                        name,
+                        factory,
+                        definition.properties()
+                );
+        definition.setBlock(block);
         BlockDefinitionRegistry.register(definition);
         BLOCK_DEFINITIONS.add(definition);
 
