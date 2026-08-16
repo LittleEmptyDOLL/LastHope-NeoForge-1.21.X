@@ -43,4 +43,18 @@ public class BlockDefinitionRegistry {
                 DEFINITIONS.values()
         );
     }
+
+    //
+    public static List<BlockDefinition> getContainerDefinitions() {
+        return DEFINITIONS.values().stream()
+                .filter(definition -> definition.containerSettings() != null)
+                .toList();
+    }
+
+    //
+    public static List<? extends Block> getContainerBlocks() {
+        return getContainerDefinitions().stream()
+                .map(definition -> definition.block().get())
+                .toList();
+    }
 }

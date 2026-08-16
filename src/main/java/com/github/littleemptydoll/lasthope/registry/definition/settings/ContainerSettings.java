@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 
 public class ContainerSettings {
-    private InventoryLayout layout;
+    private final InventoryLayout layout;
     private boolean preserveInventory;
     private @Nullable ResourceLocation guiTexture;
     private ContainerSound sound;
@@ -39,5 +39,21 @@ public class ContainerSettings {
     public ContainerSettings sound(ContainerSound sound) {
         this.sound = sound;
         return this;
+    }
+
+    public InventoryLayout layout() {
+        return layout;
+    }
+
+    public boolean preserveInventory() {
+        return preserveInventory;
+    }
+
+    public @Nullable ResourceLocation guiTexture() {
+        return guiTexture;
+    }
+
+    public ContainerSound sound() {
+        return sound;
     }
 }

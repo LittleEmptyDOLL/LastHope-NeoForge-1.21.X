@@ -9,6 +9,8 @@ public class ModRegistries {
         ModBlocks.register(eventBus);
         // Register the Deferred Register to the mod event bus so items get registered
         ModItems.register(eventBus);
+        // Register the Deferred Register to the mod event bus so block entities get registered
+        ModBlockEntities.register(eventBus);
         // Register the Deferred Register to the mod event bus so tabs get registered
         //ModCreativeTabs.register(eventBus);
         // Регистрируем генераторы ресурсов мода
