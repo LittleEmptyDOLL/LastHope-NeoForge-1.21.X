@@ -16,11 +16,10 @@ public class GenericContainerScreen
             Component title
     ) {
         super(menu, playerInventory, title);
-
-        calculateDimensions();
     }
 
-    private void calculateDimensions() {
+    @Override
+    protected void init() {
         InventoryLayout layout = menu.getInventoryLayout();
 
         int containerWidth = layout.columns() * ContainerGuiConstants.SLOT_SIZE;
@@ -28,25 +27,13 @@ public class GenericContainerScreen
 
         int guiWidth = Math.max(containerWidth, ContainerGuiConstants.PLAYER_INVENTORY_WIDTH);
 
-        int playerAreaHeight =
-                (ContainerGuiConstants.PLAYER_INVENTORY_ROWS + ContainerGuiConstants.HOTBAR_ROWS)
-                        * ContainerGuiConstants.SLOT_SIZE;
-
         this.imageWidth = guiWidth + ContainerGuiConstants.PADDING * 2;
         this.imageHeight =
                 ContainerGuiConstants.TITLE_HEIGHT
                         + containerHeight
                         + ContainerGuiConstants.SECTION_GAP
-                        + playerAreaHeight
+                        + ContainerGuiConstants.PLAYER_INVENTORY_HEIGHT
                         + ContainerGuiConstants.PADDING;
-    }
-
-    @Override
-    protected void init() {
-        calculateDimensions();
-
-        this.leftPos = (this.width = this.imageWidth) / 2;
-        this.topPos = (this.height = this.imageHeight) / 2;
 
         super.init();
     }
@@ -73,13 +60,13 @@ public class GenericContainerScreen
                 leftPos,
                 topPos,
                 leftPos + imageWidth,
-                topPos + playerInventoryTop - ContainerGuiConstants.SECTION_GAP,
+                topPos + playerInventoryTop - ContainerGuiConstants.SECTION_GAP / 2,
                 0xFF202020
         );
 
         guiGraphics.fill(
                 leftPos,
-                topPos +playerInventoryTop,
+                topPos + playerInventoryTop - ContainerGuiConstants.SECTION_GAP / 2,
                 leftPos + imageWidth,
                 topPos + imageHeight,
                 0xFF202020
@@ -90,7 +77,7 @@ public class GenericContainerScreen
                 topPos + ContainerGuiConstants.TITLE_HEIGHT,
                 leftPos + imageWidth - ContainerGuiConstants.PADDING,
                 topPos + ContainerGuiConstants.TITLE_HEIGHT
-                        + menu.getInventoryLayout().rows() * ContainerGuiConstants.SLOT_SIZE,
+                        + containerHeight,
                 0xFF303030
         );
     }

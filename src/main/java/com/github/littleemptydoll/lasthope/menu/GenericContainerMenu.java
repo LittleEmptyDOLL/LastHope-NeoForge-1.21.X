@@ -61,7 +61,7 @@ public class GenericContainerMenu extends AbstractContainerMenu {
         //Контейнер
         int containerWidth = layout.columns() * ContainerGuiConstants.SLOT_SIZE;
 
-        int playerInventoryWidth = ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS + ContainerGuiConstants.SLOT_SIZE;
+        int playerInventoryWidth = ContainerGuiConstants.PLAYER_INVENTORY_WIDTH;
 
         int containerX = ContainerGuiConstants.PADDING + (playerInventoryWidth - containerWidth) / 2;
 
@@ -73,7 +73,7 @@ public class GenericContainerMenu extends AbstractContainerMenu {
                     blockEntity,
                     slot,
                     containerX + column * ContainerGuiConstants.SLOT_SIZE,
-                    ContainerGuiConstants.SLOT_SIZE + row * ContainerGuiConstants.SLOT_SIZE
+                    ContainerGuiConstants.TITLE_HEIGHT + row * ContainerGuiConstants.SLOT_SIZE
             ));
         }
         //Основной инвентарь игрока

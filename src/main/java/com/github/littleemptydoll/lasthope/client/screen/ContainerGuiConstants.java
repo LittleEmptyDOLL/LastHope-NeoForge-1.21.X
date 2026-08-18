@@ -7,7 +7,6 @@ public final class ContainerGuiConstants {
     public static final int PADDING = 8;
 
     public static final int TITLE_HEIGHT = 18;
-
     public static final int SECTION_GAP = 12;
 
     public static final int PLAYER_INVENTORY_ROWS = 3;
@@ -17,5 +16,8 @@ public final class ContainerGuiConstants {
 
     public static final int PLAYER_INVENTORY_WIDTH = PLAYER_INVENTORY_COLUMNS * SLOT_SIZE;
 
-    public static final int PLAYER_INVENTORY_HEIGHT = (PLAYER_INVENTORY_ROWS + HOTBAR_ROWS) * SLOT_SIZE;
+    public static final int PLAYER_INVENTORY_HEIGHT =
+            PLAYER_INVENTORY_ROWS * SLOT_SIZE
+                    + SECTION_GAP
+                    + HOTBAR_ROWS * SLOT_SIZE;
 }
