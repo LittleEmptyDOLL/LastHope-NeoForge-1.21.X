@@ -3,6 +3,7 @@ package com.github.littleemptydoll.lasthope.blockentity;
 import com.github.littleemptydoll.lasthope.registry.BlockEntityRegistry;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
+import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayout;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -142,5 +143,11 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return true;
+    }
+
+    public InventoryLayout getInventoryLayout() {
+        return BlockDefinitionRegistry.get(getBlockState())
+                .containerSettings()
+                .layout();
     }
 }
