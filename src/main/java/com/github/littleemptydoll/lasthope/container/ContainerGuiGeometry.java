@@ -93,7 +93,7 @@ public final class ContainerGuiGeometry {
         return playerInventorySlotY()
                 + ContainerGuiConstants.PLAYER_INVENTORY_ROWS
                 * ContainerGuiConstants.SLOT_SIZE
-                + ContainerGuiConstants.SECTION_GAP;
+                + ContainerGuiConstants.PLAYER_INVENTORY_HOTBAR_GAP;
     }
 
     public int imageWidth() {

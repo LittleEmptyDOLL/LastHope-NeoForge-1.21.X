@@ -16,4 +16,6 @@ public final class InventoryLayouts {
     public static final InventoryLayout CASE = InventoryLayout.of(2, 4);
 
     public static final InventoryLayout CAR_TRUNK = InventoryLayout.of(4, 9);
+
+    public static final InventoryLayout SOME_BIG_BOX = InventoryLayout.of(10, 12);
 }

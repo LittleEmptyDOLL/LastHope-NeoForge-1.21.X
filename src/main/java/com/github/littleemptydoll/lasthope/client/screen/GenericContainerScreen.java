@@ -2,6 +2,7 @@ package com.github.littleemptydoll.lasthope.client.screen;
 
 import com.github.littleemptydoll.lasthope.container.ContainerGuiConstants;
 import com.github.littleemptydoll.lasthope.container.ContainerGuiGeometry;
+import com.github.littleemptydoll.lasthope.container.ContainerGuiRender;
 import com.github.littleemptydoll.lasthope.menu.GenericContainerMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -40,27 +41,29 @@ public class GenericContainerScreen
             int mouseX,
             int MouseY
     ) {
-        int containerX = leftPos + geometry.containerX();
-        int containerY = topPos + geometry.containerY();
-
-        int playerX = leftPos + geometry.playerInventoryX();
-        int playerY = topPos + geometry.playerInventoryY();
-
         //Фон контейнера
-        guiGraphics.fill(
-                containerX,
-                containerY,
-                containerX + geometry.containerWidth(),
-                containerY + geometry.containerHeight(),
-                0xFF202020
+        ContainerGuiRender.renderContainer(
+                guiGraphics,
+                geometry,
+                leftPos,
+                topPos
         );
+
+        //Слоты контейнера
+        ContainerGuiRender.renderContainerSlots(
+                guiGraphics,
+                geometry,
+                menu.getInventoryLayout(),
+                leftPos,
+                topPos
+        );
+
         //Фон инвентаря игрока
-        guiGraphics.fill(
-                playerX,
-                playerY,
-                playerX + geometry.playerInventoryWidth(),
-                playerY + geometry.playerInventoryHeight(),
-                0xFF252525
+        ContainerGuiRender.renderPlayerInventory(
+                guiGraphics,
+                geometry,
+                leftPos,
+                topPos
         );
     }
 
@@ -116,7 +119,7 @@ public class GenericContainerScreen
 
         int containerTitleWidth = this.font.width(containerTitle);
 
-        int containerTitleX = (this.imageWidth - containerTitleWidth) / 2;
+        int containerTitleX = geometry.containerX() + ContainerGuiConstants.PADDING;
 
         int containerTitleY = (ContainerGuiConstants.TITLE_HEIGHT - this.font.lineHeight) / 2;
 
@@ -139,7 +142,7 @@ public class GenericContainerScreen
 
         int playerTitleWidth = this.font.width(playerTitle);
 
-        int playerTitleX = (this.imageWidth - playerTitleWidth) / 2;
+        int playerTitleX = geometry.playerInventoryX() + ContainerGuiConstants.PADDING;
 
         int playerTitleY =
                 geometry.playerInventoryY()

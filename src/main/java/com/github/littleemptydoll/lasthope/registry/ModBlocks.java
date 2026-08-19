@@ -3,6 +3,7 @@ package com.github.littleemptydoll.lasthope.registry;
 import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
+import com.github.littleemptydoll.lasthope.block.decoration.TestStorageBlock;
 import com.github.littleemptydoll.lasthope.client.model.ModelType;
 import com.github.littleemptydoll.lasthope.registry.category.BlockCategory;
 import com.github.littleemptydoll.lasthope.registry.definition.*;
@@ -31,15 +32,29 @@ public class ModBlocks {
             "test_block",
             TestBlock::new,
             BlockDefinition.builder()
-                    .category(BlockCategory.STORAGE)
+                    .category(BlockCategory.DECORATION)
                     .assetFolder(AssetFolder.DECORATION)
                     .properties(ModBlockProperties::decoration)
+                    .build()
+    );
+
+    public static final BlockDefinition TEST_STORAGE_BLOCK = BlockRegistry.register(
+            "test_storage_block",
+            TestStorageBlock::new,
+            BlockDefinition.builder()
+                    .category(BlockCategory.STORAGE)
+                    .assetFolder(AssetFolder.DECORATION)
+                    .properties(ModBlockProperties::metalDecoration)
                     .container(
                             ContainerSettings.of(
-                                    InventoryLayouts.BOX,
+                                    InventoryLayouts.SOME_BIG_BOX,
                                     ContainerSound.METAL
                             )
-                                    .preserveInventory(true)
+                    )
+                    .tags(
+                            BlockTag.FLAMMABLE,
+                            BlockTag.BREAKABLE,
+                            BlockTag.LOOTABLE
                     )
                     .build()
     );
