@@ -50,7 +50,7 @@ public abstract class AbstractContainerBlock
                                 new GenericContainerMenu(
                                         containerId,
                                         inventory,
-                                        pos
+                                        container
                                 ),
                         Component.translatable(
                                 state.getBlock().getDescriptionId()

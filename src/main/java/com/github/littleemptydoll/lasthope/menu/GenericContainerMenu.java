@@ -1,7 +1,8 @@
 package com.github.littleemptydoll.lasthope.menu;
 
 import com.github.littleemptydoll.lasthope.blockentity.GenericContainerBlockEntity;
-import com.github.littleemptydoll.lasthope.client.screen.ContainerGuiConstants;
+import com.github.littleemptydoll.lasthope.container.ContainerGuiConstants;
+import com.github.littleemptydoll.lasthope.container.ContainerGuiGeometry;
 import com.github.littleemptydoll.lasthope.registry.MenuRegistry;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayout;
 import net.minecraft.core.BlockPos;
@@ -13,9 +14,26 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class GenericContainerMenu extends AbstractContainerMenu {
-    private final BlockPos blockPos;
+
     private final GenericContainerBlockEntity blockEntity;
-    private final int containerSlotCount;
+    private final InventoryLayout inventoryLayout;
+
+    //Серверный конструктор
+    public GenericContainerMenu(
+            int containerId,
+            Inventory playerInventory,
+            GenericContainerBlockEntity blockEntity
+    ) {
+        super(MenuRegistry.GENERIC_CONTAINER.get(), containerId);
+
+        this.blockEntity = blockEntity;
+        this.inventoryLayout = blockEntity.getInventoryLayout();
+
+        ContainerGuiGeometry geometry = new ContainerGuiGeometry(inventoryLayout);
+
+        addContainerSlots(geometry);
+        addPlayerInventorySlots(geometry, playerInventory);
+    }
 
     //Клиентский конструктор
     public GenericContainerMenu(
@@ -26,110 +44,127 @@ public class GenericContainerMenu extends AbstractContainerMenu {
         this(
                 containerId,
                 playerInventory,
-                buffer.readBlockPos()
+                getBlockEntity(playerInventory, buffer)
         );
     }
 
-    //Основной конструктор
-    public GenericContainerMenu(
-            int containerId,
-            Inventory playerInventory,
-            BlockPos blockPos
+    //Контейнер
+    private void addContainerSlots(
+            ContainerGuiGeometry geometry
     ) {
-        super(
-                MenuRegistry.GENERIC_CONTAINER.get(),
-                containerId
-        );
+        int columns = inventoryLayout.columns();
+        int slots = inventoryLayout.slots();
 
-        this.blockPos = blockPos;
+        int startX = geometry.containerX() + ContainerGuiConstants.PADDING;
+        int startY = geometry.containerSlotY();
 
-        if (playerInventory.player.level().getBlockEntity(blockPos)
-                instanceof GenericContainerBlockEntity container) {
-            this.blockEntity = container;
-        } else {
-            throw new IllegalStateException(
-                    "No GenericContainerBlockEntity found at " + blockPos
+        for (int index = 0; index < slots; index++) {
+            int row = index / columns;
+            int column = index % columns;
+
+            int x = startX + column * ContainerGuiConstants.SLOT_SIZE;
+            int y = startY + row * ContainerGuiConstants.SLOT_SIZE;
+
+            addSlot(
+                    new Slot(
+                            blockEntity,
+                            index,
+                            x,
+                            y
+                    )
             );
         }
+    }
 
-        this.containerSlotCount = blockEntity.getContainerSize();
+    private void addPlayerInventorySlots(
+            ContainerGuiGeometry geometry,
+            Inventory playerInventory
+    ) {
+        int startX = geometry.playerInventoryX() + ContainerGuiConstants.PADDING;
 
-        InventoryLayout layout = blockEntity.getInventoryLayout();
+        int inventoryY = geometry.playerInventorySlotY();
 
-        int columns = layout.columns();
-
-        //Контейнер
-        int containerWidth = layout.columns() * ContainerGuiConstants.SLOT_SIZE;
-
-        int playerInventoryWidth = ContainerGuiConstants.PLAYER_INVENTORY_WIDTH;
-
-        int containerX = ContainerGuiConstants.PADDING + (playerInventoryWidth - containerWidth) / 2;
-
-        for (int slot = 0; slot < containerSlotCount; slot++) {
-            int row = slot / columns;
-            int column = slot % columns;
-
-            addSlot(new Slot(
-                    blockEntity,
-                    slot,
-                    containerX + column * ContainerGuiConstants.SLOT_SIZE,
-                    ContainerGuiConstants.TITLE_HEIGHT + row * ContainerGuiConstants.SLOT_SIZE
-            ));
-        }
         //Основной инвентарь игрока
-        int playerInventoryY =
-                ContainerGuiConstants.SLOT_SIZE
-                        + layout.rows() * ContainerGuiConstants.SLOT_SIZE
-                        + ContainerGuiConstants.SECTION_GAP;
+        for (int row = 0; row < ContainerGuiConstants.PLAYER_INVENTORY_ROWS; row++) {
+            for (int column = 0; column < ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS; column++) {
+                int index = column
+                        + row * ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS
+                        + ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS;
 
-        for (int row = 0; row < 3; row++) {
-            for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(
-                        playerInventory,
-                        column
-                                + row * ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS
-                                + ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS,
-                        ContainerGuiConstants.PADDING + column * ContainerGuiConstants.SLOT_SIZE,
-                        playerInventoryY + row * ContainerGuiConstants.SLOT_SIZE
-                ));
+                int x = startX + column * ContainerGuiConstants.SLOT_SIZE;
+                int y = inventoryY + row * ContainerGuiConstants.SLOT_SIZE;
+
+                addSlot(
+                        new Slot(
+                                playerInventory,
+                                index,
+                                x,
+                                y
+                        )
+                );
             }
         }
         //Хотбар
-        int hotbarY = playerInventoryY + 3 * ContainerGuiConstants.SLOT_SIZE + ContainerGuiConstants.SECTION_GAP;
+        int hotbarY = geometry.hotbarY();
 
-        for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(
-                    playerInventory,
-                    column,
-                    ContainerGuiConstants.PADDING
-                            + column * ContainerGuiConstants.SLOT_SIZE,
-                    hotbarY
-            ));
+        for (int column = 0; column < ContainerGuiConstants.PLAYER_INVENTORY_COLUMNS; column++) {
+            int x = startX + column * ContainerGuiConstants.SLOT_SIZE;
+
+            addSlot(
+                    new Slot(
+                            playerInventory,
+                            column,
+                            x,
+                            hotbarY
+                    )
+            );
         }
     }
 
-    //Позиция блока с которым работает меню
-    public BlockPos getBlockPos() {
-        return blockPos;
+    public InventoryLayout getInventoryLayout() {
+        return inventoryLayout;
+    }
+
+    private static GenericContainerBlockEntity getBlockEntity(
+            Inventory playerInventory,
+            FriendlyByteBuf buffer
+    ) {
+        BlockPos pos = buffer.readBlockPos();
+
+        if (!(playerInventory.player.level().getBlockEntity(pos)
+                instanceof GenericContainerBlockEntity blockEntity)) {
+            throw new IllegalStateException(
+                    "Expected GenericContainerBlockEntity at " + pos
+            );
+        }
+
+        return blockEntity;
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int slotIndex) {
-        Slot slot = slots.get(slotIndex);
+    public ItemStack quickMoveStack(
+            Player player,
+            int index
+    ) {
+        Slot slot = slots.get(index);
 
         if (!slot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack sourceStack = slot.getItem();
-        ItemStack resultStack = sourceStack.copy();
+        ItemStack stack = slot.getItem();
+        ItemStack copy = stack.copy();
 
-        if (slotIndex < containerSlotCount) {
+        int containerSlots = inventoryLayout.slots();
+        int playerInventoryStart = containerSlots;
+        int playerInventoryEnd = slots.size();
+
+        if (index < containerSlots) {
             //Контейнер -> инвентарь игрока
             if (!moveItemStackTo(
-                    sourceStack,
-                    containerSlotCount,
-                    slots.size(),
+                    stack,
+                    playerInventoryStart,
+                    playerInventoryEnd,
                     true
             )) {
                 return ItemStack.EMPTY;
@@ -137,22 +172,22 @@ public class GenericContainerMenu extends AbstractContainerMenu {
         } else {
             //Инвентарь игрока -> контейнер
             if (!moveItemStackTo(
-                    sourceStack,
+                    stack,
                     0,
-                    containerSlotCount,
+                    containerSlots,
                     false
             )) {
                 return ItemStack.EMPTY;
             }
         }
 
-        if (sourceStack.isEmpty()) {
+        if (stack.isEmpty()) {
             slot.set(ItemStack.EMPTY);
         } else {
             slot.setChanged();
         }
 
-        return resultStack;
+        return copy;
     }
 
     @Override
@@ -163,14 +198,7 @@ public class GenericContainerMenu extends AbstractContainerMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
-//        blockEntity.stopOpen(player);
-    }
 
-    public InventoryLayout getInventoryLayout() {
-        return blockEntity.getInventoryLayout();
-    }
-
-    public int getContainerSlotCount() {
-        return containerSlotCount;
+        blockEntity.stopOpen(player);
     }
 }

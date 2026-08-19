@@ -1,4 +1,4 @@
-package com.github.littleemptydoll.lasthope.client.screen;
+package com.github.littleemptydoll.lasthope.container;
 
 public final class ContainerGuiConstants {
     private ContainerGuiConstants() {}
