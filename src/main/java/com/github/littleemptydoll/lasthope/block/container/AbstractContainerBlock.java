@@ -52,6 +52,8 @@ public abstract class AbstractContainerBlock
             return InteractionResult.PASS;
         }
 
+        container.startOpen(player);
+
         serverPlayer.openMenu(
                 new SimpleMenuProvider(
                         (containerId, inventory, ignorePlayer) ->
