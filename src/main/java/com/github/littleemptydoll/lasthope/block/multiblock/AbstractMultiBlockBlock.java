@@ -50,10 +50,10 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         }
 
         Direction facing = state.getValue(FACING);
-        for (int index = 0; index < definition.parts(); index++) {
-            BlockPos target = anchorPos(pos, definition, state.getValue(PART))
-                    .offset(offset(definition, index, facing));
+        BlockPos anchor = anchorPos(pos, definition, state.getValue(PART), facing);
 
+        for (int index = 0; index < definition.parts(); index++) {
+            BlockPos target = anchor.offset(offset(definition, index, facing));
             if (target.equals(pos)) {
                 continue;
             }
@@ -87,8 +87,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         }
 
         Direction facing = state.getValue(FACING);
-        BlockPos anchor = anchorPos(pos, definition, state.getValue(PART));
-        BlockState partState = state;
+        BlockPos anchor = anchorPos(pos, definition, state.getValue(PART), facing);
 
         for (int index = 0; index < definition.parts(); index++) {
             if (index == definition.anchorIndex()) {
@@ -97,7 +96,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
 
             level.setBlock(
                     anchor.offset(offset(definition, index, facing)),
-                    partState.setValue(PART, index),
+                    state.setValue(PART, index),
                     Block.UPDATE_ALL
             );
         }
@@ -125,7 +124,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
 
         int part = state.getValue(PART);
         Direction facing = state.getValue(FACING);
-        BlockPos anchor = anchorPos(pos, definition, part);
+        BlockPos anchor = anchorPos(pos, definition, part, facing);
 
         for (int index = 0; index < definition.parts(); index++) {
             if (index == part) {
@@ -146,19 +145,10 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
     private BlockPos anchorPos(
             BlockPos pos,
             MultiBlockDefinition definition,
-            int part
+            int part,
+            Direction facing
     ) {
-        Direction facing = Direction.NORTH;
-        BlockState state = levelState(pos);
-        if (state != null && state.hasProperty(FACING)) {
-            facing = state.getValue(FACING);
-        }
-
         return pos.subtract(offset(definition, part, facing));
-    }
-
-    private BlockState levelState(BlockPos pos) {
-        return null;
     }
 
     private BlockPos offset(
