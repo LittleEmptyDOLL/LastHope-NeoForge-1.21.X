@@ -2,14 +2,14 @@ package com.github.littleemptydoll.lasthope.client.model;
 
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.MultiBlockDefinition;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonArray;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
+import net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 
 import java.io.IOException;
@@ -87,8 +87,8 @@ public final class MultiBlockModelGenerator {
             model.ao(source.get("ambientocclusion").getAsBoolean());
         }
 
-        if (source.has("gui_light")) {
-            model.guiLight(source.get("gui_light").getAsString());
+        if (source.has("render_type")) {
+            model.renderType(source.get("render_type").getAsString());
         }
 
         if (source.has("textures")) {
@@ -182,7 +182,7 @@ public final class MultiBlockModelGenerator {
                             (float) (origin[1] - cellMinY),
                             (float) (origin[2] - cellMinZ)
                     )
-                    .axis(rotation.get("axis").getAsString())
+                    .axis(axis(rotation.get("axis").getAsString()))
                     .angle(rotation.get("angle").getAsFloat())
                     .rescale(rotation.has("rescale") && rotation.get("rescale").getAsBoolean());
         }
@@ -191,7 +191,17 @@ public final class MultiBlockModelGenerator {
             JsonObject faces = element.getAsJsonObject("faces");
             for (Map.Entry<String, JsonElement> entry : faces.entrySet()) {
                 Direction direction = direction(entry.getKey());
-                if (direction == null || !keepsOriginalFace(direction, from, to, minX, minY, minZ, maxX, maxY, maxZ)) {
+                if (direction == null || !keepsOriginalFace(
+                        direction,
+                        from,
+                        to,
+                        minX,
+                        minY,
+                        minZ,
+                        maxX,
+                        maxY,
+                        maxZ
+                )) {
                     continue;
                 }
 
@@ -214,12 +224,23 @@ public final class MultiBlockModelGenerator {
                 }
 
                 if (face.has("rotation")) {
-                    faceBuilder.rotation(face.get("rotation").getAsInt());
+                    faceBuilder.rotation(faceRotation(face.get("rotation").getAsInt()));
                 }
 
                 if (face.has("uv")) {
                     double[] uv = vector4(face.getAsJsonArray("uv"));
-                    double[] clippedUv = clipUv(direction, uv, from, to, minX, minY, minZ, maxX, maxY, maxZ);
+                    double[] clippedUv = clipUv(
+                            direction,
+                            uv,
+                            from,
+                            to,
+                            minX,
+                            minY,
+                            minZ,
+                            maxX,
+                            maxY,
+                            maxZ
+                    );
                     faceBuilder.uvs(
                             (float) clippedUv[0],
                             (float) clippedUv[1],
@@ -334,6 +355,27 @@ public final class MultiBlockModelGenerator {
         }
         double ratio = (value - min) / (max - min);
         return uvMin + (uvMax - uvMin) * ratio;
+    }
+
+    private static Direction.Axis axis(String value) {
+        return switch (value) {
+            case "x" -> Direction.Axis.X;
+            case "y" -> Direction.Axis.Y;
+            case "z" -> Direction.Axis.Z;
+            default -> throw new IllegalArgumentException("Unknown model rotation axis: " + value);
+        };
+    }
+
+    private static FaceRotation faceRotation(int degrees) {
+        return switch (Math.floorMod(degrees, 360)) {
+            case 0 -> FaceRotation.ZERO;
+            case 90 -> FaceRotation.CLOCKWISE_90;
+            case 180 -> FaceRotation.UPSIDE_DOWN;
+            case 270 -> FaceRotation.COUNTERCLOCKWISE_90;
+            default -> throw new IllegalArgumentException(
+                    "Block model face rotation must be 0, 90, 180 or 270: " + degrees
+            );
+        };
     }
 
     private static Direction direction(String value) {
