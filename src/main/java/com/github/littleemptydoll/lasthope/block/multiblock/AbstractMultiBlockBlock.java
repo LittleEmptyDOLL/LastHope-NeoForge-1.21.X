@@ -33,7 +33,13 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockState state = super.getStateForPlacement(context);
-        return state == null ? null : state.setValue(PART, 0);
+        if (state == null) {
+            return null;
+        }
+
+        MultiBlockDefinition definition = multiBlockDefinition(state);
+        int anchorPart = definition == null ? 0 : definition.anchorIndex();
+        return state.setValue(PART, anchorPart);
     }
 
     @Override
@@ -45,7 +51,9 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
 
         Direction facing = state.getValue(FACING);
         for (int index = 0; index < definition.parts(); index++) {
-            BlockPos target = pos.offset(offset(definition, index, facing));
+            BlockPos target = anchorPos(pos, definition, state.getValue(PART))
+                    .offset(offset(definition, index, facing));
+
             if (target.equals(pos)) {
                 continue;
             }
@@ -79,10 +87,17 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         }
 
         Direction facing = state.getValue(FACING);
-        for (int index = 1; index < definition.parts(); index++) {
+        BlockPos anchor = anchorPos(pos, definition, state.getValue(PART));
+        BlockState partState = state;
+
+        for (int index = 0; index < definition.parts(); index++) {
+            if (index == definition.anchorIndex()) {
+                continue;
+            }
+
             level.setBlock(
-                    pos.offset(offset(definition, index, facing)),
-                    state.setValue(PART, index),
+                    anchor.offset(offset(definition, index, facing)),
+                    partState.setValue(PART, index),
                     Block.UPDATE_ALL
             );
         }
@@ -110,7 +125,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
 
         int part = state.getValue(PART);
         Direction facing = state.getValue(FACING);
-        BlockPos anchor = pos.subtract(offset(definition, part, facing));
+        BlockPos anchor = anchorPos(pos, definition, part);
 
         for (int index = 0; index < definition.parts(); index++) {
             if (index == part) {
@@ -128,14 +143,32 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         }
     }
 
+    private BlockPos anchorPos(
+            BlockPos pos,
+            MultiBlockDefinition definition,
+            int part
+    ) {
+        Direction facing = Direction.NORTH;
+        BlockState state = levelState(pos);
+        if (state != null && state.hasProperty(FACING)) {
+            facing = state.getValue(FACING);
+        }
+
+        return pos.subtract(offset(definition, part, facing));
+    }
+
+    private BlockState levelState(BlockPos pos) {
+        return null;
+    }
+
     private BlockPos offset(
             MultiBlockDefinition definition,
             int index,
             Direction facing
     ) {
-        int x = definition.x(index);
-        int y = definition.y(index);
-        int z = definition.z(index);
+        int x = definition.relativeX(index);
+        int y = definition.relativeY(index);
+        int z = definition.relativeZ(index);
 
         return switch (facing) {
             case EAST -> new BlockPos(-z, y, x);
