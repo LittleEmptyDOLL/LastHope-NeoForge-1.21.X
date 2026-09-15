@@ -2,6 +2,7 @@ package com.github.littleemptydoll.lasthope.client.model;
 
 import com.github.littleemptydoll.lasthope.block.BlockRotation;
 import com.github.littleemptydoll.lasthope.block.decoration.AbstractDecorativeBlock;
+import com.github.littleemptydoll.lasthope.block.multiblock.AbstractMultiBlockBlock;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.MultiBlockDefinition;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,17 +61,16 @@ public class BlockStateGenerator {
             MultiBlockDefinition multiBlock,
             BlockState state
     ) {
-        if (multiBlock == null || !state.hasProperty(com.github.littleemptydoll.lasthope.block.multiblock.AbstractMultiBlockBlock.PART)) {
+        if (multiBlock == null || !state.hasProperty(AbstractMultiBlockBlock.PART)) {
             return AssetPaths.getBlockModelPath(definition);
         }
 
-        String suffix = multiBlock.partModel(
-                state.getValue(com.github.littleemptydoll.lasthope.block.multiblock.AbstractMultiBlockBlock.PART)
-        );
+        int part = state.getValue(AbstractMultiBlockBlock.PART);
+        if (!multiBlock.isOccupied(part)) {
+            return AssetPaths.getBlockModelPath(definition);
+        }
 
-        return suffix == null
-                ? AssetPaths.getBlockModelPath(definition)
-                : AssetPaths.getBlockModelPath(definition, suffix);
+        return AssetPaths.getBlockModelPath(definition, "part_" + part);
     }
 
     private static int modelRotation(
