@@ -9,8 +9,6 @@ import com.github.littleemptydoll.lasthope.block.decoration.TestStorageBlock;
 import com.github.littleemptydoll.lasthope.registry.category.BlockCategory;
 import com.github.littleemptydoll.lasthope.registry.definition.AssetFolder;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
-import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
-import com.github.littleemptydoll.lasthope.registry.definition.BlockRegistry;
 import com.github.littleemptydoll.lasthope.registry.definition.ContainerSound;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.ContainerSettings;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
