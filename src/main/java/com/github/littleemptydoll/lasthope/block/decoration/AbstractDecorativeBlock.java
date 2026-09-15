@@ -1,10 +1,10 @@
 package com.github.littleemptydoll.lasthope.block.decoration;
 
-import com.github.littleemptydoll.lasthope.block.BlockShape;
+import com.github.littleemptydoll.lasthope.block.BlockPlacement;
 import com.github.littleemptydoll.lasthope.block.BlockRotation;
+import com.github.littleemptydoll.lasthope.block.BlockShape;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
-import com.github.littleemptydoll.lasthope.registry.definition.BlockPlacement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -18,8 +18,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractDecorativeBlock extends Block {
     public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
