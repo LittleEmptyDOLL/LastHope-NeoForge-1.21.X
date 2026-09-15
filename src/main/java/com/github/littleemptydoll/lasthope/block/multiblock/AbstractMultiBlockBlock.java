@@ -1,5 +1,6 @@
 package com.github.littleemptydoll.lasthope.block.multiblock;
 
+import com.github.littleemptydoll.lasthope.block.BlockRotation;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
 import com.github.littleemptydoll.lasthope.registry.definition.MultiBlockDefinition;
@@ -8,16 +9,19 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll.lasthope.block.decoration.AbstractDecorativeBlock {
-    public static final IntegerProperty PART = IntegerProperty.create("part", 0, 255);
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty PART =
+            net.minecraft.world.level.block.state.properties.IntegerProperty.create("part", 0, 255);
 
     protected AbstractMultiBlockBlock(Properties properties) {
         super(properties);
@@ -28,6 +32,24 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(PART);
+    }
+
+    @Override
+    protected VoxelShape getShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        MultiBlockDefinition definition = multiBlockDefinition(state);
+        if (definition != null && definition.isOccupied(state.getValue(PART))) {
+            return definition.partShape(state.getValue(PART)).get(
+                    state,
+                    BlockRotation.HORIZONTAL
+            );
+        }
+
+        return super.getShape(state, level, pos, context);
     }
 
     @Override
