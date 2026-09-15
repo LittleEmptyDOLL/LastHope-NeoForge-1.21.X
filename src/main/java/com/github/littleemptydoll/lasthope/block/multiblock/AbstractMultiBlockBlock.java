@@ -52,7 +52,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         Direction facing = state.getValue(FACING);
         BlockPos anchor = anchorPos(pos, definition, state.getValue(PART), facing);
 
-        for (int index = 0; index < definition.parts(); index++) {
+        for (int index : definition.occupiedParts()) {
             BlockPos target = anchor.offset(offset(definition, index, facing));
             if (target.equals(pos)) {
                 continue;
@@ -89,7 +89,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         Direction facing = state.getValue(FACING);
         BlockPos anchor = anchorPos(pos, definition, state.getValue(PART), facing);
 
-        for (int index = 0; index < definition.parts(); index++) {
+        for (int index : definition.occupiedParts()) {
             if (index == definition.anchorIndex()) {
                 continue;
             }
@@ -126,7 +126,7 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         Direction facing = state.getValue(FACING);
         BlockPos anchor = anchorPos(pos, definition, part, facing);
 
-        for (int index = 0; index < definition.parts(); index++) {
+        for (int index : definition.occupiedParts()) {
             if (index == part) {
                 continue;
             }
