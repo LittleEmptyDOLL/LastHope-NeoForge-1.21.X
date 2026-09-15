@@ -1,7 +1,11 @@
 package com.github.littleemptydoll.lasthope.registry.definition;
 
-import java.util.ArrayList;
+import com.github.littleemptydoll.lasthope.block.BlockShape;
+import net.minecraft.core.BlockPos;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class MultiBlockDefinition {
     private final int width;
@@ -10,7 +14,7 @@ public final class MultiBlockDefinition {
     private final int anchorX;
     private final int anchorY;
     private final int anchorZ;
-    private final List<String> partModels;
+    private final Set<Integer> occupiedParts;
 
     private MultiBlockDefinition(
             int width,
@@ -19,15 +23,15 @@ public final class MultiBlockDefinition {
             int anchorX,
             int anchorY,
             int anchorZ,
-            List<String> partModels
+            Set<Integer> occupiedParts
     ) {
         if (width < 1 || height < 1 || depth < 1) {
             throw new IllegalArgumentException("Multiblock dimensions must be positive");
         }
 
-        long parts = (long) width * height * depth;
-        if (parts > 256) {
-            throw new IllegalArgumentException("Multiblock cannot contain more than 256 parts");
+        long cells = (long) width * height * depth;
+        if (cells > 256) {
+            throw new IllegalArgumentException("Multiblock cannot contain more than 256 cells");
         }
 
         if (anchorX < 0 || anchorX >= width
@@ -36,8 +40,9 @@ public final class MultiBlockDefinition {
             throw new IllegalArgumentException("Multiblock anchor must be inside the definition bounds");
         }
 
-        if (partModels.size() != parts) {
-            throw new IllegalArgumentException("Multiblock part model list must contain exactly " + parts + " entries");
+        int anchorIndex = index(width, depth, anchorX, anchorY, anchorZ);
+        if (!occupiedParts.contains(anchorIndex)) {
+            throw new IllegalArgumentException("Multiblock anchor must be an occupied cell");
         }
 
         this.width = width;
@@ -46,11 +51,37 @@ public final class MultiBlockDefinition {
         this.anchorX = anchorX;
         this.anchorY = anchorY;
         this.anchorZ = anchorZ;
-        this.partModels = List.copyOf(partModels);
+        this.occupiedParts = Set.copyOf(occupiedParts);
     }
 
-    public static MultiBlockDefinition of(int width, int height, int depth) {
-        return of(width, height, depth, 0, 0, 0);
+    public static MultiBlockDefinition of(BlockShape collision, int anchorX, int anchorY, int anchorZ) {
+        List<BlockPos> occupied = collision.occupiedCells();
+        if (occupied.isEmpty()) {
+            throw new IllegalArgumentException("Multiblock collision must occupy at least one cell");
+        }
+
+        int width = occupied.stream().mapToInt(BlockPos::getX).max().orElseThrow() + 1;
+        int height = occupied.stream().mapToInt(BlockPos::getY).max().orElseThrow() + 1;
+        int depth = occupied.stream().mapToInt(BlockPos::getZ).max().orElseThrow() + 1;
+
+        Set<Integer> parts = new HashSet<>();
+        for (BlockPos pos : occupied) {
+            parts.add(index(width, depth, pos.getX(), pos.getY(), pos.getZ()));
+        }
+
+        return new MultiBlockDefinition(
+                width,
+                height,
+                depth,
+                anchorX,
+                anchorY,
+                anchorZ,
+                parts
+        );
+    }
+
+    public static MultiBlockDefinition of(BlockShape collision) {
+        return of(collision, 0, 0, 0);
     }
 
     public static MultiBlockDefinition of(
@@ -61,7 +92,15 @@ public final class MultiBlockDefinition {
             int anchorY,
             int anchorZ
     ) {
-        int parts = Math.multiplyExact(Math.multiplyExact(width, height), depth);
+        Set<Integer> parts = new HashSet<>();
+        for (int y = 0; y < height; y++) {
+            for (int z = 0; z < depth; z++) {
+                for (int x = 0; x < width; x++) {
+                    parts.add(index(width, depth, x, y, z));
+                }
+            }
+        }
+
         return new MultiBlockDefinition(
                 width,
                 height,
@@ -69,36 +108,12 @@ public final class MultiBlockDefinition {
                 anchorX,
                 anchorY,
                 anchorZ,
-                new ArrayList<>(java.util.Collections.nCopies(parts, null))
+                parts
         );
     }
 
-    public MultiBlockDefinition partModel(int index, String modelSuffix) {
-        if (index < 0 || index >= parts()) {
-            throw new IllegalArgumentException("Invalid multiblock part index: " + index);
-        }
-        if (modelSuffix == null || modelSuffix.isBlank()) {
-            throw new IllegalArgumentException("Multiblock part model suffix must not be blank");
-        }
-
-        List<String> models = new ArrayList<>(partModels);
-        models.set(index, modelSuffix);
-        return new MultiBlockDefinition(
-                width,
-                height,
-                depth,
-                anchorX,
-                anchorY,
-                anchorZ,
-                models
-        );
-    }
-
-    public String partModel(int index) {
-        if (index < 0 || index >= parts()) {
-            throw new IllegalArgumentException("Invalid multiblock part index: " + index);
-        }
-        return partModels.get(index);
+    private static int index(int width, int depth, int x, int y, int z) {
+        return x + width * (z + depth * y);
     }
 
     public int width() {
@@ -125,12 +140,16 @@ public final class MultiBlockDefinition {
         return anchorZ;
     }
 
-    public int parts() {
+    public int cells() {
         return width * height * depth;
     }
 
+    public int parts() {
+        return occupiedParts.size();
+    }
+
     public int index(int x, int y, int z) {
-        return x + width * (z + depth * y);
+        return index(width, depth, x, y, z);
     }
 
     public int x(int index) {
@@ -143,6 +162,14 @@ public final class MultiBlockDefinition {
 
     public int z(int index) {
         return (index / width) % depth;
+    }
+
+    public boolean isOccupied(int index) {
+        return occupiedParts.contains(index);
+    }
+
+    public boolean isOccupied(int x, int y, int z) {
+        return isOccupied(index(x, y, z));
     }
 
     public int anchorIndex() {
@@ -159,5 +186,9 @@ public final class MultiBlockDefinition {
 
     public int relativeZ(int index) {
         return z(index) - anchorZ;
+    }
+
+    public Set<Integer> occupiedParts() {
+        return occupiedParts;
     }
 }
