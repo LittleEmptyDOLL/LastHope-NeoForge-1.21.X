@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 public class AssetPaths {
     private AssetPaths() {}
 
-    public static String getFilePath (BlockDefinition definition) {
+    public static String getFilePath(BlockDefinition definition) {
         return definition.assetFolder().folder()
                 + "/"
                 + definition.block().getId().getPath();
@@ -14,6 +14,10 @@ public class AssetPaths {
 
     public static String getBlockModelPath(BlockDefinition definition) {
         return "block/" + getFilePath(definition);
+    }
+
+    public static String getBlockModelPath(BlockDefinition definition, String modelSuffix) {
+        return getBlockModelPath(definition) + "_" + modelSuffix;
     }
 
     public static String getBlockTexturePath(BlockDefinition definition) {
