@@ -7,11 +7,13 @@ import com.github.littleemptydoll.lasthope.registry.definition.settings.Inventor
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -52,7 +54,6 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
             HolderLookup.Provider registries
     ) {
         super.saveAdditional(tag, registries);
-        // Сохранение предметов
         ContainerHelper.saveAllItems(tag, items, registries);
     }
 
@@ -62,16 +63,44 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
             HolderLookup.Provider registries
     ) {
         super.loadAdditional(tag, registries);
-        // Загрузка предметов
         ContainerHelper.loadAllItems(tag, items, registries);
     }
 
-    private NonNullList<ItemStack> items;
-
-    private static final String ITEMS_TAG = "Items";
+    private final NonNullList<ItemStack> items;
 
     public NonNullList<ItemStack> getItems() {
         return items;
+    }
+
+    /**
+     * Restores the inventory stored in the block ItemStack.
+     * The vanilla minecraft:container component is used for this,
+     * matching the modern Shulker Box behavior.
+     */
+    public void loadFromItemStack(ItemStack stack) {
+        ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
+
+        if (contents == null) {
+            return;
+        }
+
+        contents.copyInto(items);
+        setChanged();
+    }
+
+    /**
+     * Stores the current inventory in the block ItemStack.
+     * Empty inventories are not written to the component.
+     */
+    public void saveToItemStack(ItemStack stack) {
+        if (isEmpty()) {
+            stack.remove(DataComponents.CONTAINER);
+        } else {
+            stack.set(
+                    DataComponents.CONTAINER,
+                    ItemContainerContents.fromItems(items)
+            );
+        }
     }
 
     @Override
