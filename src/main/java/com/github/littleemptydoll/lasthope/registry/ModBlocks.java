@@ -1,26 +1,28 @@
 package com.github.littleemptydoll.lasthope.registry;
 
+import com.github.littleemptydoll.lasthope.block.BlockPlacement;
+import com.github.littleemptydoll.lasthope.block.BlockShape;
 import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestStorageBlock;
-import com.github.littleemptydoll.lasthope.client.model.ModelType;
 import com.github.littleemptydoll.lasthope.registry.category.BlockCategory;
-import com.github.littleemptydoll.lasthope.registry.definition.*;
-import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
+import com.github.littleemptydoll.lasthope.registry.definition.AssetFolder;
+import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
+import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
+import com.github.littleemptydoll.lasthope.registry.definition.BlockRegistry;
+import com.github.littleemptydoll.lasthope.registry.definition.ContainerSound;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.ContainerSettings;
+import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
 import com.github.littleemptydoll.lasthope.registry.tag.BlockTag;
 import net.neoforged.bus.api.IEventBus;
 
 import java.util.List;
 
 public class ModBlocks {
-    // Реестр всех блоков нашего мода.
-    // Всё, что будет зарегистрированно здесь, автоматически получит id
-    // вида "lasthope:<имя_блока>"
     private ModBlocks() {}
 
-    public static void register(IEventBus bus){
+    public static void register(IEventBus bus) {
         BlockRegistry.register(bus);
     }
 
@@ -45,6 +47,8 @@ public class ModBlocks {
                     .category(BlockCategory.STORAGE)
                     .assetFolder(AssetFolder.DECORATION)
                     .properties(ModBlockProperties::metalDecoration)
+                    .placement(BlockPlacement.horizontal())
+                    .shape(BlockShape.cube())
                     .container(
                             ContainerSettings.of(
                                     InventoryLayouts.SOME_BIG_BOX,
@@ -66,6 +70,8 @@ public class ModBlocks {
                     .category(BlockCategory.STORAGE)
                     .assetFolder(AssetFolder.DECORATION)
                     .properties(ModBlockProperties::softDecoration)
+                    .placement(BlockPlacement.horizontal())
+                    .shape(BlockShape.box(3, 0, 1, 13, 8, 15))
                     .container(
                             ContainerSettings.of(
                                     InventoryLayouts.SMALL_BOX,
