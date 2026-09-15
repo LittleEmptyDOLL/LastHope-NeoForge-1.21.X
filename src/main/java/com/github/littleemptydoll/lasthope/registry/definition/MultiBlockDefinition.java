@@ -15,6 +15,7 @@ public final class MultiBlockDefinition {
     private final int anchorY;
     private final int anchorZ;
     private final Set<Integer> occupiedParts;
+    private final BlockShape collision;
 
     private MultiBlockDefinition(
             int width,
@@ -23,7 +24,8 @@ public final class MultiBlockDefinition {
             int anchorX,
             int anchorY,
             int anchorZ,
-            Set<Integer> occupiedParts
+            Set<Integer> occupiedParts,
+            BlockShape collision
     ) {
         if (width < 1 || height < 1 || depth < 1) {
             throw new IllegalArgumentException("Multiblock dimensions must be positive");
@@ -52,6 +54,7 @@ public final class MultiBlockDefinition {
         this.anchorY = anchorY;
         this.anchorZ = anchorZ;
         this.occupiedParts = Set.copyOf(occupiedParts);
+        this.collision = collision;
     }
 
     public static MultiBlockDefinition of(BlockShape collision, int anchorX, int anchorY, int anchorZ) {
@@ -76,7 +79,8 @@ public final class MultiBlockDefinition {
                 anchorX,
                 anchorY,
                 anchorZ,
-                parts
+                parts,
+                collision
         );
     }
 
@@ -92,24 +96,16 @@ public final class MultiBlockDefinition {
             int anchorY,
             int anchorZ
     ) {
-        Set<Integer> parts = new HashSet<>();
-        for (int y = 0; y < height; y++) {
-            for (int z = 0; z < depth; z++) {
-                for (int x = 0; x < width; x++) {
-                    parts.add(index(width, depth, x, y, z));
-                }
-            }
-        }
-
-        return new MultiBlockDefinition(
-                width,
-                height,
-                depth,
-                anchorX,
-                anchorY,
-                anchorZ,
-                parts
+        BlockShape collision = BlockShape.modelBox(
+                0,
+                0,
+                0,
+                width * 16.0,
+                height * 16.0,
+                depth * 16.0
         );
+
+        return of(collision, anchorX, anchorY, anchorZ);
     }
 
     private static int index(int width, int depth, int x, int y, int z) {
@@ -190,5 +186,17 @@ public final class MultiBlockDefinition {
 
     public Set<Integer> occupiedParts() {
         return occupiedParts;
+    }
+
+    public BlockShape collision() {
+        return collision;
+    }
+
+    public BlockShape partShape(int index) {
+        if (!isOccupied(index)) {
+            throw new IllegalArgumentException("Invalid multiblock part index: " + index);
+        }
+
+        return collision.forCell(x(index), y(index), z(index));
     }
 }
