@@ -20,6 +20,10 @@ public class AssetPaths {
         return getBlockModelPath(definition) + "_" + modelSuffix;
     }
 
+    public static String getMultiBlockSourceModelPath(BlockDefinition definition) {
+        return "source/" + getBlockModelPath(definition);
+    }
+
     public static String getBlockTexturePath(BlockDefinition definition) {
         return "texture/" + getFilePath(definition);
     }
