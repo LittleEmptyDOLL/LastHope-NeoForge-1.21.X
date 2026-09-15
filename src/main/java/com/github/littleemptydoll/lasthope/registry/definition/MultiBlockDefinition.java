@@ -1,5 +1,8 @@
 package com.github.littleemptydoll.lasthope.registry.definition;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class MultiBlockDefinition {
     private final int width;
     private final int height;
@@ -7,6 +10,7 @@ public final class MultiBlockDefinition {
     private final int anchorX;
     private final int anchorY;
     private final int anchorZ;
+    private final List<String> partModels;
 
     private MultiBlockDefinition(
             int width,
@@ -14,7 +18,8 @@ public final class MultiBlockDefinition {
             int depth,
             int anchorX,
             int anchorY,
-            int anchorZ
+            int anchorZ,
+            List<String> partModels
     ) {
         if (width < 1 || height < 1 || depth < 1) {
             throw new IllegalArgumentException("Multiblock dimensions must be positive");
@@ -31,16 +36,21 @@ public final class MultiBlockDefinition {
             throw new IllegalArgumentException("Multiblock anchor must be inside the definition bounds");
         }
 
+        if (partModels.size() != parts) {
+            throw new IllegalArgumentException("Multiblock part model list must contain exactly " + parts + " entries");
+        }
+
         this.width = width;
         this.height = height;
         this.depth = depth;
         this.anchorX = anchorX;
         this.anchorY = anchorY;
         this.anchorZ = anchorZ;
+        this.partModels = List.copyOf(partModels);
     }
 
     public static MultiBlockDefinition of(int width, int height, int depth) {
-        return new MultiBlockDefinition(width, height, depth, 0, 0, 0);
+        return of(width, height, depth, 0, 0, 0);
     }
 
     public static MultiBlockDefinition of(
@@ -51,14 +61,44 @@ public final class MultiBlockDefinition {
             int anchorY,
             int anchorZ
     ) {
+        int parts = Math.multiplyExact(Math.multiplyExact(width, height), depth);
         return new MultiBlockDefinition(
                 width,
                 height,
                 depth,
                 anchorX,
                 anchorY,
-                anchorZ
+                anchorZ,
+                new ArrayList<>(java.util.Collections.nCopies(parts, null))
         );
+    }
+
+    public MultiBlockDefinition partModel(int index, String modelSuffix) {
+        if (index < 0 || index >= parts()) {
+            throw new IllegalArgumentException("Invalid multiblock part index: " + index);
+        }
+        if (modelSuffix == null || modelSuffix.isBlank()) {
+            throw new IllegalArgumentException("Multiblock part model suffix must not be blank");
+        }
+
+        List<String> models = new ArrayList<>(partModels);
+        models.set(index, modelSuffix);
+        return new MultiBlockDefinition(
+                width,
+                height,
+                depth,
+                anchorX,
+                anchorY,
+                anchorZ,
+                models
+        );
+    }
+
+    public String partModel(int index) {
+        if (index < 0 || index >= parts()) {
+            throw new IllegalArgumentException("Invalid multiblock part index: " + index);
+        }
+        return partModels.get(index);
     }
 
     public int width() {
