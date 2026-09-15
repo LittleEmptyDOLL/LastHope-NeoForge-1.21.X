@@ -43,10 +43,12 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
     ) {
         MultiBlockDefinition definition = multiBlockDefinition(state);
         if (definition != null && definition.isOccupied(state.getValue(PART))) {
-            return definition.partShape(state.getValue(PART)).get(
-                    state,
-                    BlockRotation.HORIZONTAL
-            );
+            BlockDefinition blockDefinition = blockDefinition(state);
+            BlockRotation rotation = blockDefinition == null
+                    ? BlockRotation.NONE
+                    : blockDefinition.placement().rotation();
+
+            return definition.partShape(state.getValue(PART)).get(state, rotation);
         }
 
         return super.getShape(state, level, pos, context);
@@ -190,8 +192,12 @@ public abstract class AbstractMultiBlockBlock extends com.github.littleemptydoll
         };
     }
 
+    private BlockDefinition blockDefinition(BlockState state) {
+        return BlockDefinitionRegistry.get(state);
+    }
+
     private MultiBlockDefinition multiBlockDefinition(BlockState state) {
-        BlockDefinition definition = BlockDefinitionRegistry.get(state);
+        BlockDefinition definition = blockDefinition(state);
         return definition == null ? null : definition.multiBlock();
     }
 }
