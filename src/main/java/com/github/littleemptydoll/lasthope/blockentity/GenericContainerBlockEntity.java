@@ -3,12 +3,15 @@ package com.github.littleemptydoll.lasthope.blockentity;
 import com.github.littleemptydoll.lasthope.registry.BlockEntityRegistry;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinitionRegistry;
+import com.github.littleemptydoll.lasthope.registry.definition.ContainerSound;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayout;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +21,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class GenericContainerBlockEntity extends BlockEntity implements Container {
+    private final NonNullList<ItemStack> items;
+    private int openers;
+
     public GenericContainerBlockEntity(
             BlockPos pos,
             BlockState state
@@ -44,7 +50,6 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
         }
 
         int size = definition.containerSettings().layout().slots();
-
         this.items = NonNullList.withSize(size, ItemStack.EMPTY);
     }
 
@@ -64,12 +69,6 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
     ) {
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, items, registries);
-    }
-
-    private final NonNullList<ItemStack> items;
-
-    public NonNullList<ItemStack> getItems() {
-        return items;
     }
 
     /**
@@ -101,6 +100,54 @@ public class GenericContainerBlockEntity extends BlockEntity implements Containe
                     ItemContainerContents.fromItems(items)
             );
         }
+    }
+
+    @Override
+    public void startOpen(Player player) {
+        if (player.isSpectator()) {
+            return;
+        }
+
+        if (openers++ == 0) {
+            playContainerSound(true);
+        }
+    }
+
+    @Override
+    public void stopOpen(Player player) {
+        if (player.isSpectator()) {
+            return;
+        }
+
+        if (openers > 0 && --openers == 0) {
+            playContainerSound(false);
+        }
+    }
+
+    private void playContainerSound(boolean opening) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        BlockDefinition definition = BlockDefinitionRegistry.get(getBlockState());
+
+        if (definition == null || definition.containerSettings() == null) {
+            return;
+        }
+
+        ContainerSound containerSound = definition.containerSettings().sound();
+        SoundEvent sound = opening
+                ? containerSound.open()
+                : containerSound.close();
+
+        level.playSound(
+                null,
+                worldPosition,
+                sound,
+                SoundSource.BLOCKS,
+                1.0F,
+                1.0F
+        );
     }
 
     @Override
