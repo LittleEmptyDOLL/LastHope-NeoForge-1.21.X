@@ -112,16 +112,186 @@ public final class MultiBlockModelGenerator {
         }
 
         JsonArray elements = source.getAsJsonArray("elements");
-        int cellX = definition.x(part);
-        int cellY = definition.y(part);
-        int cellZ = definition.z(part);
 
         for (JsonElement elementJson : elements) {
-            addElementForCell(model, elementJson.getAsJsonObject(), cellX, cellY, cellZ);
+            JsonObject element = elementJson.getAsJsonObject();
+            int ownerPart = findOwningPart(element, definition);
+            if (ownerPart == part) {
+                addElement(model, element, definition.x(part), definition.y(part), definition.z(part));
+            }
         }
     }
 
-    private static void addElementForCell(
+    /**
+     * Assigns the whole model element to the occupied cell containing the
+     * largest volume of its model-space bounding box. This keeps each element
+     * intact instead of clipping it at cell boundaries, which is important for
+     * rotated elements and avoids visual seams.
+     *
+     * Ties are resolved by the lowest PART index for deterministic generation.
+     */
+    private static int findOwningPart(
+            JsonObject element,
+            MultiBlockDefinition definition
+    ) {
+        double[] bounds = elementBounds(element);
+
+        int bestPart = -1;
+        double bestVolume = -1.0;
+
+        for (int part : definition.occupiedParts()) {
+            int cellX = definition.x(part);
+            int cellY = definition.y(part);
+            int cellZ = definition.z(part);
+
+            double cellMinX = cellX * 16.0;
+            double cellMinY = cellY * 16.0;
+            double cellMinZ = cellZ * 16.0;
+            double cellMaxX = cellMinX + 16.0;
+            double cellMaxY = cellMinY + 16.0;
+            double cellMaxZ = cellMinZ + 16.0;
+
+            double intersection = intersectionVolume(
+                    bounds,
+                    cellMinX, cellMinY, cellMinZ,
+                    cellMaxX, cellMaxY, cellMaxZ
+            );
+
+            if (intersection > bestVolume
+                    || (nearlyEqual(intersection, bestVolume) && (bestPart < 0 || part < bestPart))) {
+                bestVolume = intersection;
+                bestPart = part;
+            }
+        }
+
+        if (bestPart < 0) {
+            throw new IllegalStateException("Multiblock model element does not intersect any occupied cell.");
+        }
+
+        return bestPart;
+    }
+
+    /**
+     * Returns an axis-aligned bounding box for the model element. For rotated
+     * elements the bounds are calculated from the eight rotated corners, so
+     * the ownership decision uses the element's actual rotated extent.
+     */
+    private static double[] elementBounds(JsonObject element) {
+        double[] from = vector(element.getAsJsonArray("from"));
+        double[] to = vector(element.getAsJsonArray("to"));
+
+        if (!element.has("rotation")) {
+            return new double[]{
+                    from[0], from[1], from[2],
+                    to[0], to[1], to[2]
+            };
+        }
+
+        JsonObject rotation = element.getAsJsonObject("rotation");
+        double[] origin = vector(rotation.getAsJsonArray("origin"));
+        Direction.Axis axis = axis(rotation.get("axis").getAsString());
+        double angle = Math.toRadians(rotation.get("angle").getAsDouble());
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+
+        for (int x = 0; x <= 1; x++) {
+            for (int y = 0; y <= 1; y++) {
+                for (int z = 0; z <= 1; z++) {
+                    double px = x == 0 ? from[0] : to[0];
+                    double py = y == 0 ? from[1] : to[1];
+                    double pz = z == 0 ? from[2] : to[2];
+
+                    double[] rotated = rotatePoint(
+                            px, py, pz, origin, axis, angle
+                    );
+
+                    minX = Math.min(minX, rotated[0]);
+                    minY = Math.min(minY, rotated[1]);
+                    minZ = Math.min(minZ, rotated[2]);
+                    maxX = Math.max(maxX, rotated[0]);
+                    maxY = Math.max(maxY, rotated[1]);
+                    maxZ = Math.max(maxZ, rotated[2]);
+                }
+            }
+        }
+
+        return new double[]{minX, minY, minZ, maxX, maxY, maxZ};
+    }
+
+    private static double[] rotatePoint(
+            double x,
+            double y,
+            double z,
+            double[] origin,
+            Direction.Axis axis,
+            double angle
+    ) {
+        double dx = x - origin[0];
+        double dy = y - origin[1];
+        double dz = z - origin[2];
+
+        double sin = Math.sin(angle);
+        double cos = Math.cos(angle);
+
+        double rotatedX;
+        double rotatedY;
+        double rotatedZ;
+
+        switch (axis) {
+            case X -> {
+                rotatedX = dx;
+                rotatedY = dy * cos - dz * sin;
+                rotatedZ = dy * sin + dz * cos;
+            }
+            case Y -> {
+                rotatedX = dx * cos + dz * sin;
+                rotatedY = dy;
+                rotatedZ = -dx * sin + dz * cos;
+            }
+            case Z -> {
+                rotatedX = dx * cos - dy * sin;
+                rotatedY = dx * sin + dy * cos;
+                rotatedZ = dz;
+            }
+            default -> throw new IllegalStateException("Unexpected rotation axis: " + axis);
+        }
+
+        return new double[]{
+                rotatedX + origin[0],
+                rotatedY + origin[1],
+                rotatedZ + origin[2]
+        };
+    }
+
+    private static double intersectionVolume(
+            double[] bounds,
+            double cellMinX,
+            double cellMinY,
+            double cellMinZ,
+            double cellMaxX,
+            double cellMaxY,
+            double cellMaxZ
+    ) {
+        double minX = Math.max(bounds[0], cellMinX);
+        double minY = Math.max(bounds[1], cellMinY);
+        double minZ = Math.max(bounds[2], cellMinZ);
+        double maxX = Math.min(bounds[3], cellMaxX);
+        double maxY = Math.min(bounds[4], cellMaxY);
+        double maxZ = Math.min(bounds[5], cellMaxZ);
+
+        if (minX >= maxX || minY >= maxY || minZ >= maxZ) {
+            return 0.0;
+        }
+
+        return (maxX - minX) * (maxY - minY) * (maxZ - minZ);
+    }
+
+    private static void addElement(
             BlockModelBuilder model,
             JsonObject element,
             int cellX,
@@ -134,48 +304,27 @@ public final class MultiBlockModelGenerator {
         double cellMinX = cellX * 16.0;
         double cellMinY = cellY * 16.0;
         double cellMinZ = cellZ * 16.0;
-        double cellMaxX = cellMinX + 16.0;
-        double cellMaxY = cellMinY + 16.0;
-        double cellMaxZ = cellMinZ + 16.0;
-
-        double minX = Math.max(from[0], cellMinX);
-        double minY = Math.max(from[1], cellMinY);
-        double minZ = Math.max(from[2], cellMinZ);
-        double maxX = Math.min(to[0], cellMaxX);
-        double maxY = Math.min(to[1], cellMaxY);
-        double maxZ = Math.min(to[2], cellMaxZ);
-
-        if (minX >= maxX || minY >= maxY || minZ >= maxZ) {
-            return;
-        }
-
-        boolean rotated = element.has("rotation");
-        if (rotated && spansMultipleCells(from, to, cellX, cellY, cellZ)) {
-            throw new IllegalStateException(
-                    "A rotated Blockbench element crosses a multiblock cell boundary. " +
-                    "Split the element in Blockbench or keep the rotation inside one cell."
-            );
-        }
 
         var builder = model.element()
                 .from(
-                        (float) (minX - cellMinX),
-                        (float) (minY - cellMinY),
-                        (float) (minZ - cellMinZ)
+                        (float) (from[0] - cellMinX),
+                        (float) (from[1] - cellMinY),
+                        (float) (from[2] - cellMinZ)
                 )
                 .to(
-                        (float) (maxX - cellMinX),
-                        (float) (maxY - cellMinY),
-                        (float) (maxZ - cellMinZ)
+                        (float) (to[0] - cellMinX),
+                        (float) (to[1] - cellMinY),
+                        (float) (to[2] - cellMinZ)
                 );
 
         if (element.has("shade")) {
             builder.shade(element.get("shade").getAsBoolean());
         }
 
-        if (rotated) {
+        if (element.has("rotation")) {
             JsonObject rotation = element.getAsJsonObject("rotation");
             double[] origin = vector(rotation.getAsJsonArray("origin"));
+
             builder.rotation()
                     .origin(
                             (float) (origin[0] - cellMinX),
@@ -191,17 +340,7 @@ public final class MultiBlockModelGenerator {
             JsonObject faces = element.getAsJsonObject("faces");
             for (Map.Entry<String, JsonElement> entry : faces.entrySet()) {
                 Direction direction = direction(entry.getKey());
-                if (direction == null || !keepsOriginalFace(
-                        direction,
-                        from,
-                        to,
-                        minX,
-                        minY,
-                        minZ,
-                        maxX,
-                        maxY,
-                        maxZ
-                )) {
+                if (direction == null) {
                     continue;
                 }
 
@@ -229,132 +368,17 @@ public final class MultiBlockModelGenerator {
 
                 if (face.has("uv")) {
                     double[] uv = vector4(face.getAsJsonArray("uv"));
-                    double[] clippedUv = clipUv(
-                            direction,
-                            uv,
-                            from,
-                            to,
-                            minX,
-                            minY,
-                            minZ,
-                            maxX,
-                            maxY,
-                            maxZ
-                    );
                     faceBuilder.uvs(
-                            (float) clippedUv[0],
-                            (float) clippedUv[1],
-                            (float) clippedUv[2],
-                            (float) clippedUv[3]
+                            (float) uv[0],
+                            (float) uv[1],
+                            (float) uv[2],
+                            (float) uv[3]
                     );
                 }
 
                 faceBuilder.end();
             }
         }
-    }
-
-    private static boolean spansMultipleCells(
-            double[] from,
-            double[] to,
-            int cellX,
-            int cellY,
-            int cellZ
-    ) {
-        return from[0] < cellX * 16.0 || to[0] > (cellX + 1) * 16.0
-                || from[1] < cellY * 16.0 || to[1] > (cellY + 1) * 16.0
-                || from[2] < cellZ * 16.0 || to[2] > (cellZ + 1) * 16.0;
-    }
-
-    private static boolean keepsOriginalFace(
-            Direction direction,
-            double[] from,
-            double[] to,
-            double minX,
-            double minY,
-            double minZ,
-            double maxX,
-            double maxY,
-            double maxZ
-    ) {
-        return switch (direction) {
-            case DOWN -> nearlyEqual(from[1], minY);
-            case UP -> nearlyEqual(to[1], maxY);
-            case NORTH -> nearlyEqual(from[2], minZ);
-            case SOUTH -> nearlyEqual(to[2], maxZ);
-            case WEST -> nearlyEqual(from[0], minX);
-            case EAST -> nearlyEqual(to[0], maxX);
-        };
-    }
-
-    private static double[] clipUv(
-            Direction direction,
-            double[] uv,
-            double[] from,
-            double[] to,
-            double minX,
-            double minY,
-            double minZ,
-            double maxX,
-            double maxY,
-            double maxZ
-    ) {
-        double uMin;
-        double uMax;
-        double vMin;
-        double vMax;
-        double clippedUMin;
-        double clippedUMax;
-        double clippedVMin;
-        double clippedVMax;
-
-        switch (direction) {
-            case NORTH, SOUTH -> {
-                uMin = from[0];
-                uMax = to[0];
-                vMin = from[1];
-                vMax = to[1];
-                clippedUMin = minX;
-                clippedUMax = maxX;
-                clippedVMin = minY;
-                clippedVMax = maxY;
-            }
-            case EAST, WEST -> {
-                uMin = from[2];
-                uMax = to[2];
-                vMin = from[1];
-                vMax = to[1];
-                clippedUMin = minZ;
-                clippedUMax = maxZ;
-                clippedVMin = minY;
-                clippedVMax = maxY;
-            }
-            case UP, DOWN -> {
-                uMin = from[0];
-                uMax = to[0];
-                vMin = from[2];
-                vMax = to[2];
-                clippedUMin = minX;
-                clippedUMax = maxX;
-                clippedVMin = minZ;
-                clippedVMax = maxZ;
-            }
-            default -> throw new IllegalStateException("Unexpected direction: " + direction);
-        }
-
-        double u1 = interpolate(uv[0], uv[2], uMin, uMax, clippedUMin);
-        double u2 = interpolate(uv[0], uv[2], uMin, uMax, clippedUMax);
-        double v1 = interpolate(uv[1], uv[3], vMin, vMax, clippedVMin);
-        double v2 = interpolate(uv[1], uv[3], vMin, vMax, clippedVMax);
-        return new double[]{u1, v1, u2, v2};
-    }
-
-    private static double interpolate(double uvMin, double uvMax, double min, double max, double value) {
-        if (nearlyEqual(min, max)) {
-            return uvMin;
-        }
-        double ratio = (value - min) / (max - min);
-        return uvMin + (uvMax - uvMin) * ratio;
     }
 
     private static Direction.Axis axis(String value) {
