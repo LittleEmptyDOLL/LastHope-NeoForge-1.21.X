@@ -1,0 +1,109 @@
+{
+  "textures": {
+    "all": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 14, 15],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [17, 0, 1],
+      "to": [31, 14, 15],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [1, 0, 17],
+      "to": [15, 14, 31],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [17, 0, 17],
+      "to": [31, 14, 31],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [1, 16, 1],
+      "to": [15, 30, 15],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [17, 16, 1],
+      "to": [31, 30, 15],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [1, 16, 17],
+      "to": [15, 30, 31],
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    },
+    {
+      "from": [12, 6, 6],
+      "to": [20, 10, 10],
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [16, 8, 8],
+        "rescale": true
+      },
+      "faces": {
+        "north": { "texture": "#all" },
+        "east": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west": { "texture": "#all" },
+        "up": { "texture": "#all" },
+        "down": { "texture": "#all" }
+      }
+    }
+  ]
+}
