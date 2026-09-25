@@ -124,7 +124,9 @@ public abstract class AbstractContainerBlock
                 container.saveToItemStack(containerItem);
             }
         } else {
-            for (ItemStack stack : container.getItems()) {
+            for (int slot = 0; slot < container.getContainerSize(); slot++) {
+                ItemStack stack = container.getItem(slot);
+
                 if (!stack.isEmpty()) {
                     drops.add(stack.copy());
                 }
