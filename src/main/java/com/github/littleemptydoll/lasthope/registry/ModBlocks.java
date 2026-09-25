@@ -6,10 +6,12 @@ import com.github.littleemptydoll.lasthope.block.ModBlockProperties;
 import com.github.littleemptydoll.lasthope.block.decoration.CardboardBoxBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestBlock;
 import com.github.littleemptydoll.lasthope.block.decoration.TestStorageBlock;
+import com.github.littleemptydoll.lasthope.block.multiblock.TestMultiBlock;
 import com.github.littleemptydoll.lasthope.registry.category.BlockCategory;
 import com.github.littleemptydoll.lasthope.registry.definition.AssetFolder;
 import com.github.littleemptydoll.lasthope.registry.definition.BlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.ContainerSound;
+import com.github.littleemptydoll.lasthope.registry.definition.MultiBlockDefinition;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.ContainerSettings;
 import com.github.littleemptydoll.lasthope.registry.definition.settings.InventoryLayouts;
 import com.github.littleemptydoll.lasthope.registry.tag.BlockTag;
@@ -28,6 +30,16 @@ public class ModBlocks {
         return BlockRegistry.getBlockDefinitions();
     }
 
+    private static BlockShape testMultiBlockShape() {
+        return BlockShape.modelBox(0, 0, 0, 16, 16, 16)
+                .add(BlockShape.modelBox(16, 0, 0, 32, 16, 16))
+                .add(BlockShape.modelBox(0, 0, 16, 16, 16, 32))
+                .add(BlockShape.modelBox(16, 0, 16, 32, 16, 32))
+                .add(BlockShape.modelBox(0, 16, 0, 16, 32, 16))
+                .add(BlockShape.modelBox(16, 16, 0, 32, 32, 16))
+                .add(BlockShape.modelBox(0, 16, 16, 16, 32, 32));
+    }
+
     public static final BlockDefinition TEST_BLOCK = BlockRegistry.register(
             "test_block",
             TestBlock::new,
@@ -35,6 +47,18 @@ public class ModBlocks {
                     .category(BlockCategory.DECORATION)
                     .assetFolder(AssetFolder.DECORATION)
                     .properties(ModBlockProperties::decoration)
+                    .build()
+    );
+
+    public static final BlockDefinition TEST_MULTIBLOCK = BlockRegistry.register(
+            "test_multiblock",
+            TestMultiBlock::new,
+            BlockDefinition.builder()
+                    .category(BlockCategory.DECORATION)
+                    .assetFolder(AssetFolder.DECORATION)
+                    .properties(ModBlockProperties::metalDecoration)
+                    .placement(BlockPlacement.horizontal())
+                    .multiBlock(MultiBlockDefinition.of(testMultiBlockShape()))
                     .build()
     );
 
